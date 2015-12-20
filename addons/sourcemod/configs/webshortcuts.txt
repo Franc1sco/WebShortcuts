@@ -1,0 +1,22 @@
+// usage: "trigger" "Define Windows size" http://www.site.com
+// tags: {NAME} {STEAM_ID} {USER_ID} {IP} {SERVER_IP} {SERVER_PORT}
+//
+"google" "full" http://www.google.com
+"steam" "height=720,width=1024" http://www.steampowered.com
+"sourcemod" "height=720,width=1024" http://www.sourcemod.net
+"gametracker" "height=720,width=1024" http://www.gametracker.com/server_info/{SERVER_IP}:{SERVER_PORT}/
+"franug" "height=720,width=1024" http://steamcommunity.com/id/franug/
+//
+// Hidden motd testing
+//
+// If you dont want to show a windows, only a hidden motd, put "none" instead of the windows size
+// Also you can use "about:blank" for stop the motd
+//
+"!soundmotd" "none" http://youtu.be/uq2JN5O16aE
+"!stopmotd" "none" about:blank
+//
+// fit to screen feature testing
+//
+// Use "full" instead of the windows size for adjust the windows size to the client resolution
+//
+"!fullmotd" "full" https://twitter.com/Franc1sco13
