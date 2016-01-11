@@ -24,7 +24,8 @@ return $url;
 	$url2=DameURL();
 	
 	$url_final = str_replace("http://claninspired.com/franug/webshortcuts2.php?web=", "", $url2);
-	$trozo = explode(";franug_is_pro;", $url_final);
+	$url_final2 = str_replace("http://www.claninspired.com/franug/webshortcuts2.php?web=", "", $url_final);
+	$trozo = explode(";franug_is_pro;", $url_final2);
 	
 	//echo $url_final;
 ?>
