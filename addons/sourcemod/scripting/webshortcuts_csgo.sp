@@ -2,7 +2,7 @@
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION				"2.3"
+#define PLUGIN_VERSION				"2.4"
 
 public Plugin:myinfo = 
 {
@@ -44,7 +44,7 @@ public OnPluginStart()
 	LoadWebshortcuts();
 }
  
-public OnMapEnd()
+public OnMapStart()
 {
 	LoadWebshortcuts();
 }
@@ -54,26 +54,18 @@ public Action:OnSay( client, args )
 	if(!client) return Plugin_Continue;	
 	
 	
-	decl String:text [512];
+	decl String:text [512], String:shortcut[512];
 	GetCmdArgString( text, sizeof(text) );
 	
-	new start;
-	new len = strlen(text);
-	if ( text[len-1] == '"' )
-	{
-		text[len-1] = '\0';
-		start = 1;
-	}
-	
-	decl String:shortcut [32];
-	BreakString( text[start], shortcut, sizeof(shortcut) );
+	StripQuotes(text);
+	TrimString(text);
 	
 	new size = GetArraySize( g_Shortcuts );
 	for (new i; i != size; ++i)
 	{
-		GetArrayString( g_Shortcuts, i, text, sizeof(text) );
+		GetArrayString( g_Shortcuts, i, shortcut, sizeof(shortcut) );
 		
-		if ( strcmp( shortcut, text, false ) == 0 )
+		if ( StrEqual( text, shortcut, false ))
 		{
 			QueryClientConVar(client, "cl_disablehtmlmotd", ConVarQueryFinished:ClientConVar, client);
 			
