@@ -209,12 +209,12 @@ public StreamPanel(String:title[], String:url[], client) {
 
 stock FixMotdCSGO(String:web[512], String:title[256])
 {
-	Format(web, sizeof(web), "http://claninspired.com/franug/webshortcuts2.php?web=%s;franug_is_pro;%s", title,web);
+	Format(web, sizeof(web), "http://cola-team.com/franug/webshortcuts2.php?web=%s;franug_is_pro;%s", title,web);
 }
 
 stock FixMotdCSGO_fullsize(String:web[512])
 {
-	Format(web, sizeof(web), "http://claninspired.com/franug/webshortcuts_f.html?web=%s", web);
+	Format(web, sizeof(web), "http://cola-team.com/franug/webshortcuts_f.html?web=%s", web);
 }
 
 public ClientConVar(QueryCookie:cookie, client, ConVarQueryResult:result, const String:cvarName[], const String:cvarValue[])
