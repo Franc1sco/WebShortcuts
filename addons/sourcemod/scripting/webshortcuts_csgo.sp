@@ -21,7 +21,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION				"3.0"
+#define PLUGIN_VERSION				"2.6"
 
 public Plugin myinfo = 
 {
@@ -39,9 +39,13 @@ Handle g_Links;
 char g_ServerIp [32];
 char g_ServerPort [16];
 
+ConVar gc_sURL;
+
 public void OnPluginStart()
 {
 	CreateConVar("sm_webshortcutscsgo_version", PLUGIN_VERSION, "", FCVAR_NOTIFY|FCVAR_REPLICATED);
+	
+	gc_sURL = CreateConVar("sm_webshortcutscsgo_url", "http://cola-team.com/franug/redirect.php", "URL to your webspace with webshortcuts webpart");
 	
 	RegConsoleCmd("say", OnSay);
 	RegConsoleCmd("say_team", OnSay);
@@ -208,7 +212,7 @@ public Action Command_Web(int client, int args)
 	int count = ProcessTargetString(pattern, client, targets, sizeof(targets), 0, buffer, sizeof(buffer), ml);
 
 	if(StrContains(url, "http://", false) != 0) Format(url, sizeof(url), "http://%s", url);
-	FixMotdCSGO(url,"width=screen.width*0.90,height=screen.height*0.90");
+	FixMotdCSGO(url,"height=720,width=1280");
 	
 	if (count <= 0) ReplyToCommand(client, "Bad target");
 	else for (int i = 0; i < count; i++)
@@ -228,15 +232,19 @@ public void StreamPanel(char [] title, char [] url, int client)
 	CloseHandle(Radio);
 }
 
-stock void FixMotdCSGO(char [] web, char [] title)
-{
-	Format(web, 500, "javascript: window.open(\"%s\", \"F\",\"%s\");", web, title); 
-}
+stock void FixMotdCSGO(char [] web, char [] title) 
+{ 
+	char url[64]; 
+	gc_sURL.GetString(url, sizeof(url)); 
+	Format(web, 512, "%s?web=%s&%s", url, web, title); 
+} 
 
-stock void FixMotdCSGO_fullsize(char [] web)
-{
-	Format(web, 500, "javascript: window.open(\"%s\", \"F\",\"width=screen.width*0.90,height=screen.height*0.90\");", web); 
-}
+stock void FixMotdCSGO_fullsize(char [] web) 
+{ 
+	char url[64]; 
+	gc_sURL.GetString(url, sizeof(url)); 
+	Format(web, 512, "%s?web=%s&fullsize=1", url, web); 
+} 
 
 public void ClientConVar(QueryCookie cookie, int client, ConVarQueryResult result, char [] cvarName, char [] cvarValue)
 {
