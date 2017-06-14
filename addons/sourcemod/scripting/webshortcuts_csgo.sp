@@ -16,12 +16,14 @@
  */
 
 #include <sourcemod>
+#undef REQUIRE_PLUGIN
+#include <weblync>
 
 #pragma semicolon 1
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION				"2.6"
+#define PLUGIN_VERSION				"2.7"
 
 public Plugin myinfo = 
 {
@@ -40,6 +42,8 @@ char g_ServerIp [32];
 char g_ServerPort [16];
 
 ConVar gc_sURL;
+
+bool weblync = false;
 
 public void OnPluginStart()
 {
@@ -66,6 +70,27 @@ public void OnPluginStart()
 	GetConVarString(cvar, g_ServerPort, sizeof(g_ServerPort));
 	
 	LoadWebshortcuts();
+}
+ 
+public void OnAllPluginsLoaded()
+{
+	weblync = LibraryExists("weblync");
+}
+ 
+public void OnLibraryRemoved(const char[] name)
+{
+	if (StrEqual(name, "weblync"))
+	{
+		weblync = false;
+	}
+}
+ 
+public void OnLibraryAdded(const char[] name)
+{
+	if (StrEqual(name, "weblync"))
+	{
+		weblync = true;
+	}
 }
  
 public void OnMapStart()
@@ -127,13 +152,32 @@ public Action OnSay(int client, int args)
 			}
 			else if(StrEqual(title, "full", false))
 			{
-				FixMotdCSGO_fullsize(text);
-				ShowMOTDPanel(client, "Script by Franc1sco franug", text, MOTDPANEL_TYPE_URL);
+				if(weblync)
+				{
+					//Format(text, sizeof(text), "%s&webshortcuts=1", text);
+					WebLync_OpenUrl(client, text);
+					//PrintToChat(client, text);
+				}
+				else
+				{
+					FixMotdCSGO_fullsize(text);
+					ShowMOTDPanel(client, "Script by Franc1sco franug", text, MOTDPANEL_TYPE_URL);
+				}
+				
 			}
 			else
 			{
-				FixMotdCSGO(text, title);
-				ShowMOTDPanel(client, "Script by Franc1sco franug", text, MOTDPANEL_TYPE_URL);
+				if(weblync)
+				{
+					//Format(text, sizeof(text), "%s&webshortcuts=1", text);
+					WebLync_OpenUrl(client, text);
+					//PrintToChat(client, text);
+				}
+				else
+				{
+					FixMotdCSGO(text, title);
+					ShowMOTDPanel(client, "Script by Franc1sco franug", text, MOTDPANEL_TYPE_URL);
+				}
 			}
 		}
 	}
