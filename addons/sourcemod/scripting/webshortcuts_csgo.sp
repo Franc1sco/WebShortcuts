@@ -17,18 +17,20 @@
 
 #include <sourcemod>
 #undef REQUIRE_PLUGIN
-#include <weblync>
+#include <ASteambot>
+
+#define MODULE_NAME		"[ASteambot - Web Shortcuts]"
 
 #pragma semicolon 1
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION				"2.7"
+#define PLUGIN_VERSION				"3.0"
 
 public Plugin myinfo = 
 {
 	name = "Web Shortcuts CS:GO version",
-	author = "Franc1sco franug and James \"sslice\" Gray",
+	author = "Franc1sco franug",
 	description = "Provides chat-triggered web shortcuts",
 	version = PLUGIN_VERSION,
 	url = "http://steamcommunity.com/id/franug/"
@@ -43,13 +45,13 @@ char g_ServerPort [16];
 
 ConVar gc_sURL;
 
-bool weblync = false;
+bool steambot = false;
 
 public void OnPluginStart()
 {
 	CreateConVar("sm_webshortcutscsgo_version", PLUGIN_VERSION, "", FCVAR_NOTIFY|FCVAR_REPLICATED);
 	
-	gc_sURL = CreateConVar("sm_webshortcutscsgo_url", "http://cola-team.com/franug/redirect.php", "URL to your webspace with webshortcuts webpart");
+	gc_sURL = CreateConVar("sm_webshortcutscsgo_url", "http://cola-team.com/franug/redirect.php", "URL to your webspace with webshortcuts webpart (not needed if you use ASteambot)");
 	
 	RegConsoleCmd("say", OnSay);
 	RegConsoleCmd("say_team", OnSay);
@@ -71,25 +73,34 @@ public void OnPluginStart()
 	
 	LoadWebshortcuts();
 }
+
+public void OnPluginEnd()
+{
+	if(steambot)
+		ASteambot_RemoveModule();
+}
  
 public void OnAllPluginsLoaded()
 {
-	weblync = LibraryExists("weblync");
+	steambot = LibraryExists("ASteambot");
+	
+	if(steambot)
+		ASteambot_RegisterModule("ASteambot_WebShortcuts");
 }
  
 public void OnLibraryRemoved(const char[] name)
 {
-	if (StrEqual(name, "weblync"))
+	if (StrEqual(name, "ASteambot"))
 	{
-		weblync = false;
+		steambot = false;
 	}
 }
  
 public void OnLibraryAdded(const char[] name)
 {
-	if (StrEqual(name, "weblync"))
+	if (StrEqual(name, "ASteambot"))
 	{
-		weblync = true;
+		steambot = true;
 	}
 }
  
@@ -115,7 +126,8 @@ public Action OnSay(int client, int args)
 		
 		if (StrEqual(text, shortcut, false))
 		{
-			QueryClientConVar(client, "cl_disablehtmlmotd", view_as<ConVarQueryFinished>(ClientConVar), client);
+			if(!steambot)
+				QueryClientConVar(client, "cl_disablehtmlmotd", view_as<ConVarQueryFinished>(ClientConVar), client);
 			
 			char title [256];
 			char steamId [64];
@@ -146,38 +158,23 @@ public Action OnSay(int client, int args)
 			ReplaceString(text, sizeof(text), "{NAME}", name);
 			ReplaceString(text, sizeof(text), "{IP}", clientIp);
 			
-			if(StrEqual(title, "none", false))
+			if(steambot)
+			{
+				SendURLtoSteamBot(text, client);
+			}
+			else if(StrEqual(title, "none", false))
 			{
 				StreamPanel("Webshortcuts", text, client);
 			}
 			else if(StrEqual(title, "full", false))
 			{
-				if(weblync)
-				{
-					//Format(text, sizeof(text), "%s&webshortcuts=1", text);
-					WebLync_OpenUrl(client, text);
-					//PrintToChat(client, text);
-				}
-				else
-				{
-					FixMotdCSGO_fullsize(text);
-					ShowMOTDPanel(client, "Script by Franc1sco franug", text, MOTDPANEL_TYPE_URL);
-				}
-				
+				FixMotdCSGO_fullsize(text);
+				ShowMOTDPanel(client, "Script by Franc1sco franug", text, MOTDPANEL_TYPE_URL);
 			}
 			else
 			{
-				if(weblync)
-				{
-					//Format(text, sizeof(text), "%s&webshortcuts=1", text);
-					WebLync_OpenUrl(client, text);
-					//PrintToChat(client, text);
-				}
-				else
-				{
-					FixMotdCSGO(text, title);
-					ShowMOTDPanel(client, "Script by Franc1sco franug", text, MOTDPANEL_TYPE_URL);
-				}
+				FixMotdCSGO(text, title);
+				ShowMOTDPanel(client, "Script by Franc1sco franug", text, MOTDPANEL_TYPE_URL);
 			}
 		}
 	}
@@ -256,14 +253,34 @@ public Action Command_Web(int client, int args)
 	int count = ProcessTargetString(pattern, client, targets, sizeof(targets), 0, buffer, sizeof(buffer), ml);
 
 	if(StrContains(url, "http://", false) != 0) Format(url, sizeof(url), "http://%s", url);
-	FixMotdCSGO(url,"height=720,width=1280");
+	
+	if(!steambot)
+		FixMotdCSGO(url,"height=720,width=1280");
 	
 	if (count <= 0) ReplyToCommand(client, "Bad target");
 	else for (int i = 0; i < count; i++)
 	{
-		ShowMOTDPanel(targets[i], "Web Shortcuts", url, MOTDPANEL_TYPE_URL);
+		if(!steambot)
+			ShowMOTDPanel(targets[i], "Web Shortcuts", url, MOTDPANEL_TYPE_URL);
+		else
+			SendURLtoSteamBot(url, targets[i]);
 	}
 	return Plugin_Handled;
+}
+
+public void SendURLtoSteamBot(char [] url, int client)
+{
+	char steamId[30];
+    
+	if(GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId)))
+	{
+	    char buffer[4096];
+	
+	    Format(buffer, sizeof(buffer), "%s/%s", steamId, url);
+	    
+	    PrintToServer(buffer);
+	    ASteambot_SendMesssage(AS_SIMPLE, buffer);
+	}
 }
 
 public void StreamPanel(char [] title, char [] url, int client)
@@ -299,4 +316,42 @@ public void ClientConVar(QueryCookie cookie, int client, ConVarQueryResult resul
 		PrintToChat(client, "Please, put this in your console: cl_disablehtmlmotd 0");
 		PrintToChat(client, "---------------------------------------------------------------");
 	}
+}
+
+public int ASteambot_Message(AS_MessageType MessageType, char[] msg, const int msgSize)
+{
+	if(MessageType == AS_NOT_FRIENDS)
+	{
+		int client = FindClientBySteamID(msg);
+		if(client != -1)
+		{
+			ASteambot_SendMesssage(AS_FRIEND_INVITE, msg);
+			PrintToChat(client, " \x04%s\x01 You are not friend with me and I can't send you steam messages. I sent you a friend invite.", MODULE_NAME);
+		}
+	}
+}
+
+public int FindClientBySteamID(char[] steamID)
+{
+	char clientSteamID[30];
+	for (int i = MaxClients; i > 0; --i)
+	{
+		if (IsValidClient(i))
+		{
+			if (GetClientAuthId(i, AuthId_Steam2, clientSteamID, sizeof(clientSteamID)) && StrEqual(clientSteamID, steamID))
+            {
+                return i;
+            }
+		}
+	}
+	
+	return -1;
+}
+
+stock bool IsValidClient(int client)
+{
+	if (client <= 0)return false;
+	if (client > MaxClients)return false;
+	if (!IsClientConnected(client))return false;
+	return IsClientInGame(client);
 }
