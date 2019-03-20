@@ -322,30 +322,13 @@ public int ASteambot_Message(AS_MessageType MessageType, char[] msg, const int m
 {
 	if(MessageType == AS_NOT_FRIENDS)
 	{
-		int client = FindClientBySteamID(msg);
+		int client = ASteambot_FindClientBySteam64(msg);
 		if(client != -1)
 		{
 			ASteambot_SendMesssage(AS_FRIEND_INVITE, msg);
 			PrintToChat(client, " \x04%s\x01 You are not friend with me and I can't send you steam messages. I sent you a friend invite.", MODULE_NAME);
 		}
 	}
-}
-
-public int FindClientBySteamID(char[] steamID)
-{
-	char clientSteamID[30];
-	for (int i = MaxClients; i > 0; --i)
-	{
-		if (IsValidClient(i))
-		{
-			if (GetClientAuthId(i, AuthId_Steam2, clientSteamID, sizeof(clientSteamID)) && StrEqual(clientSteamID, steamID))
-            {
-                return i;
-            }
-		}
-	}
-	
-	return -1;
 }
 
 stock bool IsValidClient(int client)
