@@ -327,7 +327,7 @@ public int ASteambot_Message(AS_MessageType MessageType, char[] msg, const int m
 		{
 			char steamid[30];
 			GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid));
-			//Required because all ASteambot <= V9.4 doesn't support steamID64.
+			//Required because all ASteambot < V9.4 doesn't support steamID64.
 			ASteambot_SendMesssage(AS_FRIEND_INVITE, steamid);
 			PrintToChat(client, " \x04%s\x01 You are not friend with me and I can't send you steam messages. I sent you a friend invite.", MODULE_NAME);
 		}
