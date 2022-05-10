@@ -1,6 +1,6 @@
 /*  Web Shortcuts CS:GO version
  *
- *  Copyright (C) 2017-2018 Francisco 'Franc1sco' García
+ *  Copyright (C) 2017-2022 Francisco 'Franc1sco' García
  * 
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -25,7 +25,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION				"3.0"
+#define PLUGIN_VERSION				"3.0.1"
 
 public Plugin myinfo = 
 {
@@ -279,7 +279,7 @@ public void SendURLtoSteamBot(char [] url, int client)
 	    Format(buffer, sizeof(buffer), "%s/%s", steamId, url);
 	    
 	    PrintToServer(buffer);
-	    ASteambot_SendMesssage(AS_SIMPLE, buffer);
+	    ASteambot_SendMessage(AS_SIMPLE, buffer);
 	}
 }
 
@@ -325,7 +325,7 @@ public int ASteambot_Message(AS_MessageType MessageType, char[] msg, const int m
 		int client = FindClientBySteamID(msg);
 		if(client != -1)
 		{
-			ASteambot_SendMesssage(AS_FRIEND_INVITE, msg);
+			ASteambot_SendMessage(AS_FRIEND_INVITE, msg);
 			PrintToChat(client, " \x04%s\x01 You are not friend with me and I can't send you steam messages. I sent you a friend invite.", MODULE_NAME);
 		}
 	}
